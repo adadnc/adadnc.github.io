@@ -3,19 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    /* Tema'yı flash olmadan uygula (kaydedilmiş veya sistem tercihi) */
+    (function(){try{var t=localStorage.getItem('besizle-theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();
+  </script>
   <title>BESİzle — Bireysel Emeklilik Takip Sistemi</title>
   <meta name="description" content="BESİzle — Bireysel Emeklilik Sistemi (BES) birikimlerinizi web ve mobilde tek bakışta takip edin.">
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <!-- Schriften lokal selbst gehostet (IBM Plex Sans + Space Grotesk) — funktioniert offline -->
   <link rel="stylesheet" href="assets/fonts.css">
   <style>
-    /* ---- Web-UI ile birebir arka plan (APIDeposu light theme) ---- */
+    /* ---- Tema değişkenleri: Light (Web-UI) + Dark ---- */
     :root{
       --background: 0 0% 100%;
       --foreground: 222.2 84% 4.9%;
       --muted-foreground: 215.4 16.3% 46.9%;
+      --pattern-url: url('assets/pattern-light.svg');
+      --grad1: 0.03; --grad2: 0.025;
+      --logo-filter: none;
       --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    /* ---- Dark Mode (shadcn dark theme) ---- */
+    html.dark{
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --pattern-url: url('assets/pattern-dark.svg');
+      --grad1: 0.06; --grad2: 0.05;
+      --logo-filter: brightness(0) invert(1);
     }
     *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body{ height:100%; }
@@ -27,27 +43,29 @@
       display:flex; align-items:center; justify-content:center;
       position:relative; overflow:hidden;
       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      transition: background-color .4s ease, color .4s ease;
     }
 
-    /* Grid Background (Web-UI ile aynı) */
+    /* Grid Pattern — Linienfarbe folgt dem Theme (background-image) */
     body::before{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:-2;
-      background-image:url('assets/pattern-bg.svg');
+      background-image: var(--pattern-url);
       background-size:200px 200px; background-repeat:repeat;
-      color:hsl(var(--foreground));
     }
-    /* Gradient Overlays (Web-UI ile aynı) */
+    /* Gradient Overlays */
     body::after{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:-1;
       background:
-        radial-gradient(900px 320px at 15% -10%, hsl(var(--foreground) / 0.03), transparent 60%),
-        radial-gradient(900px 320px at 85% 0%, hsl(var(--foreground) / 0.025), transparent 60%);
+        radial-gradient(900px 320px at 15% -10%, hsl(var(--foreground) / var(--grad1)), transparent 60%),
+        radial-gradient(900px 320px at 85% 0%, hsl(var(--foreground) / var(--grad2)), transparent 60%);
     }
 
     .hero{ text-align:center; padding:24px; }
-    .hero .logo{ width:min(210px, 48vw); height:auto; display:block; margin:0 auto; }
+    .hero .logo{ width:min(210px, 48vw); height:auto; display:block; margin:0 auto; cursor:pointer; filter:var(--logo-filter); transition: filter .4s ease, transform .2s ease; }
+    .hero .logo:hover{ transform: translateY(-1px); }
+    .hero .logo:active{ transform: scale(.98); }
     .brand{ font-family:var(--font-heading); font-weight:700; font-size:clamp(32px, 6.4vw, 54px); letter-spacing:-1px; line-height:1; color:hsl(var(--foreground)); margin-top:20px; }
-    .rule{ width:56px; height:3px; border-radius:2px; background:hsl(var(--foreground)); margin:24px auto 20px; }
+    .rule{ width:56px; height:3px; border-radius:2px; background:hsl(var(--foreground)); margin:24px auto 20px; transition: background-color .4s ease; }
     .tagline{
       font-family:var(--font-heading); font-weight:600;
       font-size:clamp(15px, 2.6vw, 21px); letter-spacing:.3px; line-height:1.35;
@@ -57,15 +75,26 @@
       margin-top:11px; font-family:var(--font-sans); font-weight:400;
       font-size:clamp(12px, 1.9vw, 14px); color:hsl(var(--muted-foreground) / .85);
     }
+    .hint{ margin-top:28px; font-family:var(--font-sans); font-size:11px; letter-spacing:.3px; color:hsl(var(--muted-foreground) / .55); }
   </style>
 </head>
 <body>
   <main class="hero">
-    <img class="logo" src="assets/logo.svg" alt="BESİzle">
+    <img class="logo" src="assets/logo.svg" alt="BESİzle" title="Tema: aç / kapat" role="button">
     <h1 class="brand">BESİzle</h1>
     <div class="rule"></div>
     <p class="tagline">Bireysel Emeklilik Takip Sistemi</p>
     <p class="sub">Emekliliğiniz, tek bakışta.</p>
+    <p class="hint">Temayı değiştirmek için logoya dokunun</p>
   </main>
+  <script>
+    (function(){
+      var root=document.documentElement, logo=document.querySelector('.logo');
+      if(logo){ logo.addEventListener('click',function(){
+        root.classList.toggle('dark');
+        try{localStorage.setItem('besizle-theme', root.classList.contains('dark')?'dark':'light');}catch(e){}
+      }); }
+    })();
+  </script>
 </body>
 </html>
